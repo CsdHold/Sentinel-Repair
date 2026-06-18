@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SENTINEL-REPAIR · ADA Mobility Services</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:       #0B1629;
+    --navyMid:    #122040;
+    --navyLight:  #1A2E52;
+    --cyan:       #00C2D4;
+    --cyanDim:    #00A8B8;
+    --amber:      #F5A623;
+    --amberDim:   #D48E1A;
+    --success:    #22C55E;
+    --danger:     #EF4444;
+    --slate:      #8FA3BF;
+    --slateLight: #C8D8EC;
+    --white:      #FFFFFF;
+    --offwhite:   #F0F5FB;
+    --cardBg:     #152035;
+    --cardBorder: #1E3058;
+  }
+
+  html { scroll-behavior: smooth; }
+  body { background: var(--navy); color: var(--white); font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--navyMid); }
+  ::-webkit-scrollbar-thumb { background: var(--navyLight); border-radius: 4px; }
+
+  a { text-decoration: none; color: inherit; }
+  button { font-family: inherit; }
+  input { font-family: inherit; }
+  input::placeholder { color: var(--slate); }
+  input:focus { border-color: rgba(0,194,212,0.5) !important; outline: none; }
+
+  /* ── Animations ── */
+  @keyframes ping { 75%,100% { transform: scale(2); opacity: 0; } }
+  @keyframes bounce { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
+  @keyframes pulse-ring {
+    0%   { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0,194,212,0.6); }
+    70%  { transform: scale(1);   box-shadow: 0 0 0 18px rgba(0,194,212,0); }
+    100% { transform: scale(0.9); }
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+  @keyframes shimmer { 0%,100%{opacity:.6} 50%{opacity:1} }
+
+  .fade-in { animation: fadeIn 0.25s ease; }
+
+  /* ── Layout ── */
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── Nav ── */
+  nav {
+    background: var(--navyMid);
+    border-bottom: 1px solid var(--cardBorder);
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .logo-text-main { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: 0.04em; line-height: 1.1; }
+  .logo-text-sub { font-size: 10px; color: var(--slate); letter-spacing: 0.08em; font-weight: 500; }
+  .logo-accent { color: var(--cyan); }
+  .desktop-tabs { display: flex; gap: 2px; margin-left: 32px; background: var(--navy); border-radius: 10px; padding: 4px; }
+  .tab-btn {
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 16px; border-radius: 8px;
+    background: none; border: 1px solid transparent;
+    color: var(--slate); font-weight: 600; font-size: 13px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .tab-btn.active { background: var(--navyLight); border-color: var(--cardBorder); color: var(--white); }
+  .tab-btn:hover:not(.active) { color: var(--slateLight); }
+  .live-badge {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 20px; padding: 6px 14px;
+    margin-left: auto;
+  }
+  .live-badge span { color: var(--success); font-size: 12px; font-weight: 700; }
+  .aria-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--cyan), var(--cyanDim));
+    border: none; border-radius: 10px; padding: 9px 18px;
+    cursor: pointer; color: var(--navy); font-weight: 700; font-size: 13px;
+  }
+  .mobile-hamburger {
+    margin-left: auto; background: none; border: none;
+    color: var(--white); cursor: pointer; padding: 4px;
+    display: none;
+  }
+
+  /* ── Mobile Menu Drawer ── */
+  #mobile-drawer {
+    background: var(--navyMid);
+    border-bottom: 1px solid var(--cardBorder);
+    padding: 16px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+  }
+  #mobile-drawer.open { display: flex; }
+  .drawer-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-radius: 10px;
+    background: none; border: 1px solid transparent;
+    color: var(--slate); font-weight: 600; font-size: 14px;
+    cursor: pointer; text-align: left;
+  }
+  .drawer-btn.active { background: var(--navyLight); border-color: var(--cardBorder); color: var(--white); }
+  .drawer-aria-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--cyan), var(--cyanDim));
+    border: none; color: var(--navy); font-weight: 700; font-size: 14px; cursor: pointer;
+  }
+
+  /* ── Pulse Dot ── */
+  .pulse-dot { position: relative; display: inline-flex; }
+  .pulse-dot .ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    animation: ping 1.4s cubic-bezier(0,0,0.2,1) infinite;
+  }
+  .pulse-dot .core { position: relative; border-radius: 50%; }
+
+  /* ── Hero Strip ── */
+  .hero {
+    background: linear-gradient(135deg, var(--navyMid) 0%, var(--navyLight) 100%);
+    border-bottom: 1px solid var(--cardBorder);
+    padding: 28px 24px 20px;
+  }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: clamp(22px, 4vw, 36px);
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .hero p { color: var(--slate); font-size: 15px; max-width: 560px; margin-bottom: 20px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .stat-card {
+    background: var(--cardBg); border: 1px solid var(--cardBorder);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .stat-value { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 26px; line-height: 1; }
+  .stat-label { color: var(--slate); font-size: 12px; margin-top: 4px; }
+
+  /* ── Main Content ── */
+  main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* ── Shops Tab ── */
+  .content-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
+  .search-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .search-input {
+    flex: 1; min-width: 200px;
+    background: var(--cardBg); border: 1px solid var(--cardBorder);
+    color: var(--white); padding: 10px 14px; border-radius: 10px; font-size: 14px;
+  }
+  .filter-btn {
+    padding: 10px 14px; border-radius: 10px;
+    background: var(--cardBg); border: 1px solid var(--cardBorder);
+    color: var(--slate); cursor: pointer; font-size: 13px; font-weight: 600;
+    transition: all 0.15s;
+  }
+  .filter-btn.active-amber { border-color: var(--amber); background: rgba(245,166,35,0.12); color: var(--amber); }
+  .filter-btn.active-cyan  { border-color: var(--cyan);  background: rgba(0,194,212,0.12);  color: var(--cyan); }
+  .results-count { color: var(--slate); font-size: 13px; margin-bottom: 12px; }
+
+  /* ── Shop Card ── */
+  .shop-card {
+    background: var(--cardBg); border: 1px solid var(--cardBorder);
+    border-radius: 12px; padding: 16px; cursor: pointer;
+    transition: all 0.2s; margin-bottom: 12px;
+  }
+  .shop-card:hover { border-color: var(--cyan); }
+  .shop-card.selected { background: var(--navyLight); border-color: var(--cyan); box-shadow: 0 0 0 2px rgba(0,194,212,0.2); }
+  .shop-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .shop-name { color: var(--white); font-weight: 700; font-size: 15px; }
+  .ada-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: rgba(0,194,212,0.12); color: var(--cyan);
+    font-size: 11px; padding: 2px 7px; border-radius: 20px; font-weight: 600;
+  }
+  .shop-location { display: flex; align-items: center; gap: 4px; color: var(--slate); font-size: 12px; margin-bottom: 6px; }
+  .status-badge {
+    font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .status-open  { background: rgba(34,197,94,0.12);  color: var(--success); }
+  .status-closed{ background: rgba(239,68,68,0.12);  color: var(--danger); }
+  .shop-dist { color: var(--slateLight); font-size: 12px; margin-top: 4px; }
+  .specialty-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .specialty-tag {
+    background: rgba(0,194,212,0.07); color: var(--cyanDim);
+    font-size: 11px; padding: 2px 8px; border-radius: 6px;
+  }
+  .shop-meta { display: flex; gap: 16px; align-items: center; }
+  .shop-rating { display: flex; align-items: center; gap: 4px; color: var(--amber); }
+  .rating-val { color: var(--white); font-weight: 600; font-size: 13px; }
+  .rating-count { color: var(--slate); font-size: 12px; }
+  .shop-wait { display: flex; align-items: center; gap: 4px; color: var(--slate); font-size: 12px; }
+  .loaner-badge {
+    margin-left: auto;
+    background: rgba(245,166,35,0.12); color: var(--amber);
+    font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+  }
+
+  /* ── Detail Panel ── */
+  .detail-panel {
+    background: var(--cardBg); border: 1px solid var(--cardBorder);
+    border-radius: 16px; padding: 24px; position: sticky; top: 76px;
+  }
+  .detail-empty {
+    background: var(--cardBg); border: 1px dashed var(--cardBorder);
+    border-radius: 16px; padding: 32px; text-align: center; color: var(--slate);
+  }
+  .detail-empty .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .detail-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .detail-name { font-weight: 800; font-size: 18px; margin-bottom: 4px; }
+  .detail-loc  { color: var(--slate); font-size: 13px; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .detail-metric {
+    background: var(--navy); border-radius: 10px; padding: 10px 14px;
+  }
+  .metric-label { color: var(--slate); font-size: 11px; margin-bottom: 2px; }
+  .metric-val   { font-weight: 700; font-size: 14px; }
+  .loaner-alert {
+    background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.25);
+    border-radius: 12px; padding: 12px 16px; margin-bottom: 20px;
+  }
+  .loaner-alert-title { color: var(--amber); font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .loaner-alert-body  { color: var(--slateLight); font-size: 13px; }
+  .section-eyebrow { color: var(--slate); font-size: 12px; font-weight: 600; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .specialty-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+  .specialty-pill { background: rgba(0,194,212,0.1); color: var(--cyan); font-size: 12px; padding: 4px 12px; border-radius: 20px; }
+  .parts-list { margin-bottom: 20px; }
+  .parts-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--cardBorder); }
+  .part-name  { font-size: 13px; font-weight: 600; }
+  .part-sku   { font-size: 11px; color: var(--slate); }
+  .part-price { color: var(--success); font-weight: 700; font-size: 13px; }
+  .part-qty   { font-size: 11px; color: var(--slate); }
+  .detail-actions { display: flex; gap: 10px; }
+  .btn-call {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+    background: var(--navy); border: 1px solid var(--cardBorder);
+    border-radius: 10px; padding: 11px; color: var(--white);
+    font-weight: 600; font-size: 13px; cursor: pointer;
+  }
+  .btn-book {
+    flex: 2; background: linear-gradient(135deg, var(--cyan), var(--cyanDim));
+    border: none; border-radius: 10px; padding: 11px 16px;
+    color: var(--navy); font-weight: 700; font-size: 13px; cursor: pointer;
+  }
+
+  /* ── Parts Tab ── */
+  .parts-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .parts-header h2 { font-weight: 800; font-size: 20px; }
+  .parts-header p  { color: var(--slate); font-size: 13px; }
+  .live-inv-badge {
+    background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 20px; padding: 6px 14px; color: var(--success); font-size: 12px; font-weight: 700;
+  }
+  .parts-table { background: var(--cardBg); border: 1px solid var(--cardBorder); border-radius: 16px; overflow: hidden; }
+  .parts-thead {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+    padding: 12px 20px; background: var(--navyLight);
+    border-bottom: 1px solid var(--cardBorder);
+  }
+  .parts-th { font-size: 11px; font-weight: 700; color: var(--slate); letter-spacing: 0.06em; }
+  .parts-tr {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+    padding: 16px 20px; transition: background 0.15s;
+    border-bottom: 1px solid var(--cardBorder);
+  }
+  .parts-tr:last-child { border-bottom: none; }
+  .parts-tr:hover { background: var(--navyLight); }
+  .part-main-name { font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+  .part-shop-name { font-size: 11px; color: var(--slate); }
+  .sku-code { font-size: 13px; color: var(--slate); font-family: monospace; }
+  .compat-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .compat-tag {
+    font-size: 10px; background: var(--navyLight); border: 1px solid var(--cardBorder);
+    color: var(--slateLight); padding: 1px 6px; border-radius: 4px;
+  }
+  .qty-high   { color: var(--success); font-weight: 700; font-size: 14px; }
+  .qty-medium { color: var(--amber);   font-weight: 700; font-size: 14px; }
+  .qty-low    { color: var(--danger);  font-weight: 700; font-size: 14px; }
+  .qty-unit   { color: var(--slate); font-size: 12px; }
+  .order-btn {
+    background: rgba(0,194,212,0.12); border: 1px solid rgba(0,194,212,0.3);
+    color: var(--cyan); font-size: 11px; padding: 5px 10px; border-radius: 6px;
+    cursor: pointer; font-weight: 600; white-space: nowrap;
+  }
+  /* Mobile parts cards */
+  .parts-card {
+    background: var(--cardBg); border: 1px solid var(--cardBorder);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+  }
+  .parts-card-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .parts-card-name { font-weight: 700; font-size: 14px; }
+  .parts-card-price { color: var(--success); font-weight: 700; font-size: 15px; }
+  .parts-card-meta { color: var(--slate); font-size: 12px; margin-bottom: 8px; }
+  .parts-card-bottom { display: flex; align-items: center; justify-content: space-between; }
+
+  /* ── Map Tab ── */
+  .map-header { margin-bottom: 16px; }
+  .map-header h2 { font-weight: 800; font-size: 20px; margin-bottom: 4px; }
+  .map-header p  { color: var(--slate); font-size: 13px; }
+  .map-container {
+    background: var(--cardBg); border: 1px solid var(--cardBorder);
+    border-radius: 16px; overflow: hidden; position: relative;
+  }
+  .map-stage {
+    height: 400px;
+    background: linear-gradient(135deg, #0B1E35, #091828);
+    position: relative; display: flex; align-items: center; justify-content: center;
+  }
+  .map-grid-svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.15; }
+  .map-radius-lg { position: absolute; width: 280px; height: 280px; border-radius: 50%; border: 1px dashed rgba(0,194,212,0.3); pointer-events: none; }
+  .map-radius-sm { position: absolute; width: 140px; height: 140px; border-radius: 50%; border: 1px dashed rgba(0,194,212,0.2); pointer-events: none; }
+  .map-you { position: absolute; width: 20px; height: 20px; border-radius: 50%; background: var(--cyan); animation: pulse-ring 2s infinite; z-index: 5; }
+  .map-pin { position: absolute; cursor: pointer; z-index: 4; }
+  .map-pin-marker {
+    width: 32px; height: 32px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  }
+  .map-pin-emoji { transform: rotate(45deg); font-size: 14px; }
+  .map-pin-label {
+    margin-top: 2px; background: var(--navyMid); border: 1px solid var(--cardBorder);
+    border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 600;
+    white-space: nowrap; color: var(--white);
+  }
+  .map-legend {
+    position: absolute; bottom: 16px; right: 16px;
+    background: var(--navyMid); border: 1px solid var(--cardBorder);
+    border-radius: 10px; padding: 10px 14px; font-size: 12px;
+  }
+  .legend-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .legend-row:last-child { margin-bottom: 0; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .map-shops-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px; margin-top: 20px;
+  }
+  .mini-shop-card {
+    background: var(--cardBg); border: 1px solid var(--cardBorder);
+    border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: border-color 0.15s;
+  }
+  .mini-shop-card:hover { border-color: var(--cyan); }
+  .mini-shop-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .mini-shop-name { font-weight: 700; font-size: 14px; }
+  .mini-shop-meta { color: var(--slate); font-size: 12px; margin-bottom: 8px; }
+  .mini-loaner { color: var(--amber); font-size: 12px; font-weight: 600; }
+
+  /* ── Chat Panel ── */
+  #chat-panel {
+    position: fixed; bottom: 24px; right: 24px; width: 380px; max-height: 85vh; height: 500px;
+    background: var(--navyMid); border: 1px solid rgba(0,194,212,0.25);
+    border-radius: 16px; display: flex; flex-direction: column;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,194,212,0.12);
+    z-index: 1000; overflow: hidden; animation: fadeIn 0.2s ease;
+  }
+  .chat-hidden { display: none !important; }
+  .chat-header {
+    background: linear-gradient(135deg, var(--navy), var(--navyLight));
+    padding: 14px 18px; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--cardBorder);
+  }
+  .chat-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), #0088AA);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; flex-shrink: 0;
+  }
+  .chat-avatar .pulse-dot { position: absolute; bottom: -1px; right: -1px; }
+  .chat-name { color: var(--white); font-weight: 700; font-size: 14px; }
+  .chat-status { color: var(--cyan); font-size: 11px; }
+  .chat-close-btn { margin-left: auto; background: none; border: none; color: var(--slate); cursor: pointer; padding: 4px; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .msg-row { display: flex; }
+  .msg-row.user { justify-content: flex-end; }
+  .msg-bubble {
+    max-width: 85%; padding: 10px 14px;
+    font-size: 13px; line-height: 1.5;
+  }
+  .msg-bubble p { margin-bottom: 8px; }
+  .msg-bubble p:last-child { margin-bottom: 0; }
+  .msg-bubble.ai {
+    background: var(--cardBg); color: var(--white);
+    border: 1px solid var(--cardBorder);
+    border-radius: 16px 16px 16px 4px;
+  }
+  .msg-bubble.user {
+    background: linear-gradient(135deg, var(--cyan), var(--cyanDim));
+    color: var(--navy); font-weight: 600;
+    border-radius: 16px 16px 4px 16px;
+  }
+  .typing-indicator {
+    display: flex; gap: 5px; padding: 10px 14px;
+    background: var(--cardBg); border: 1px solid var(--cardBorder);
+    border-radius: 16px 16px 16px 4px; width: fit-content;
+  }
+  .typing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); }
+  .typing-dot:nth-child(1) { animation: bounce 1.2s 0.0s infinite; }
+  .typing-dot:nth-child(2) { animation: bounce 1.2s 0.2s infinite; }
+  .typing-dot:nth-child(3) { animation: bounce 1.2s 0.4s infinite; }
+  .chat-quick { padding: 8px 16px; display: flex; gap: 6px; flex-wrap: wrap; border-top: 1px solid var(--cardBorder); }
+  .quick-btn {
+    background: rgba(0,194,212,0.1); border: 1px solid rgba(0,194,212,0.25);
+    color: var(--cyan); font-size: 11px; padding: 4px 10px; border-radius: 20px;
+    cursor: pointer; font-weight: 600; transition: background 0.15s;
+  }
+  .quick-btn:hover { background: rgba(0,194,212,0.2); }
+  .chat-input-row { padding: 12px 16px; display: flex; gap: 8px; border-top: 1px solid var(--cardBorder); }
+  .chat-input {
+    flex: 1; background: var(--navy); border: 1px solid var(--cardBorder);
+    color: var(--white); padding: 10px 14px; border-radius: 10px; font-size: 13px;
+  }
+  .chat-send-btn {
+    background: linear-gradient(135deg, var(--cyan), var(--cyanDim));
+    border: none; border-radius: 10px; padding: 0 14px; cursor: pointer; color: var(--navy);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── Mobile FAB ── */
+  #mobile-fab {
+    position: fixed; bottom: 24px; right: 20px;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--cyanDim));
+    border: none; cursor: pointer; font-size: 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    z-index: 999; display: none;
+    align-items: center; justify-content: center;
+    animation: pulse-ring 2.5s infinite;
+  }
+
+  /* ── Booking Modal ── */
+  #booking-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.56);
+    z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  #booking-modal.open { display: flex; }
+  .modal-box {
+    background: var(--navyMid); border: 1px solid var(--cardBorder);
+    border-radius: 20px; padding: 32px; max-width: 420px; width: 100%;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-h3 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .modal-sub { color: var(--slate); font-size: 13px; margin-bottom: 24px; }
+  .modal-fields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+  .field-label { font-size: 12px; font-weight: 600; color: var(--slate); margin-bottom: 5px; }
+  .modal-input {
+    width: 100%; background: var(--navy); border: 1px solid var(--cardBorder);
+    color: var(--white); padding: 10px 14px; border-radius: 10px; font-size: 14px;
+  }
+  .modal-checkbox-row { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .modal-checkbox-row input { accent-color: var(--cyan); width: 16px; height: 16px; }
+  .modal-checkbox-row span { font-size: 14px; color: var(--slateLight); }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-cancel {
+    flex: 1; padding: 12px; border-radius: 10px;
+    background: none; border: 1px solid var(--cardBorder);
+    color: var(--slate); cursor: pointer; font-weight: 600; font-family: inherit;
+  }
+  .modal-confirm {
+    flex: 2; padding: 12px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--cyan), var(--cyanDim));
+    border: none; color: var(--navy); font-weight: 700; cursor: pointer; font-size: 14px; font-family: inherit;
+  }
+  .modal-success { text-align: center; }
+  .modal-success .check { font-size: 56px; margin-bottom: 16px; }
+  .modal-success h3 { font-size: 22px; font-weight: 800; margin-bottom: 8px; color: var(--success); }
+  .modal-success p  { color: var(--slate); font-size: 14px; }
+
+  /* ── AI Modal ── */
+  #ai-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  #ai-modal.open { display: flex; }
+  .ai-modal-box {
+    background: var(--navyMid); border: 1px solid var(--cyan);
+    border-radius: 20px; padding: 28px; max-width: 500px; width: 100%;
+    box-shadow: 0 16px 40px rgba(0,194,212,0.15);
+    position: relative; animation: fadeIn 0.2s ease;
+  }
+  .ai-modal-header { font-size: 18px; font-weight: 800; color: var(--cyan); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .ai-modal-content { font-size: 14px; line-height: 1.6; color: var(--slateLight); }
+  .ai-modal-content strong { color: var(--white); }
+  .ai-close-btn {
+    position: absolute; top: 18px; right: 20px; background: none; border: none;
+    color: var(--slate); cursor: pointer; font-size: 20px; transition: color 0.15s;
+  }
+  .ai-close-btn:hover { color: var(--white); }
+
+  /* ── Footer ── */
+  footer {
+    background: var(--navyMid); border-top: 1px solid var(--cardBorder);
+    padding: 20px 24px; margin-top: 40px;
+  }
+  .footer-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  .footer-logo { display: flex; align-items: center; gap: 8px; }
+  .footer-logo-text { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 15px; }
+  .footer-copy { color: var(--slate); font-size: 12px; text-align: center; }
+  .footer-links { display: flex; gap: 16px; }
+  .footer-links a { color: var(--slate); font-size: 12px; }
+  .footer-links a:hover { color: var(--slateLight); }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .desktop-tabs, .live-badge, .aria-btn { display: none !important; }
+    .mobile-hamburger { display: flex !important; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .content-grid { grid-template-columns: 1fr !important; }
+    .detail-panel { position: static; }
+    #chat-panel { width: calc(100vw - 32px); right: 16px; bottom: 100px; }
+    #mobile-fab { display: flex !important; }
+    .parts-thead, .parts-tr { display: none; }
+    .parts-cards-mobile { display: block; }
+    .map-shops-grid { grid-template-columns: 1fr; }
+    footer .footer-links { display: none; }
+  }
+  @media (min-width: 769px) {
+    #mobile-fab { display: none !important; }
+    .parts-cards-mobile { display: none; }
+  }
+
+  /* ── Tab Panels ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAV ── -->
+<nav>
+  <div class="logo-wrap">
+    <svg viewBox="0 0 120 120" width="48" height="48" style="filter:drop-shadow(0 0 8px rgba(0,194,212,0.5));flex-shrink:0">
+      <defs>
+        <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#00C2D4" stop-opacity="0.9"/>
+          <stop offset="50%"  stop-color="#7B5EA7" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#00C2D4" stop-opacity="0.6"/>
+        </linearGradient>
+        <linearGradient id="sGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#00E5F5"/>
+          <stop offset="100%" stop-color="#9B6FD4"/>
+        </linearGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="1.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <path d="M60 8 L100 24 L100 62 Q100 90 60 112 Q20 90 20 62 L20 24 Z" fill="none" stroke="url(#shieldGrad)" stroke-width="2.5" opacity="0.85" filter="url(#glow)"/>
+      <path d="M60 8 L100 24 L100 62 Q100 90 60 112 Q20 90 20 62 L20 24 Z" fill="#00C2D4" fill-opacity="0.06"/>
+      <circle cx="60" cy="28" r="3.5" fill="#ffffff" filter="url(#glow)"/>
+      <circle cx="38" cy="40" r="3.5" fill="#00C2D4" opacity="0.85" filter="url(#glow)"/>
+      <circle cx="82" cy="40" r="3.5" fill="#9B6FD4" opacity="0.85" filter="url(#glow)"/>
+      <circle cx="30" cy="58" r="3.5" fill="#00C2D4" opacity="0.85" filter="url(#glow)"/>
+      <circle cx="60" cy="54" r="3.5" fill="#ffffff" filter="url(#glow)"/>
+      <circle cx="90" cy="58" r="3.5" fill="#9B6FD4" opacity="0.85" filter="url(#glow)"/>
+      <circle cx="38" cy="74" r="3.5" fill="#00C2D4" opacity="0.85" filter="url(#glow)"/>
+      <circle cx="60" cy="80" r="3.5" fill="#9B6FD4" opacity="0.85" filter="url(#glow)"/>
+      <circle cx="82" cy="74" r="3.5" fill="#9B6FD4" opacity="0.85" filter="url(#glow)"/>
+      <line x1="60" y1="28" x2="38" y2="40" stroke="#00C2D4" stroke-width="0.8" opacity="0.5"/>
+      <line x1="60" y1="28" x2="82" y2="40" stroke="#9B6FD4" stroke-width="0.8" opacity="0.5"/>
+      <line x1="38" y1="40" x2="30" y2="58" stroke="#00C2D4" stroke-width="0.8" opacity="0.5"/>
+      <line x1="38" y1="40" x2="60" y2="54" stroke="#9B6FD4" stroke-width="0.8" opacity="0.5"/>
+      <line x1="82" y1="40" x2="60" y2="54" stroke="#00C2D4" stroke-width="0.8" opacity="0.5"/>
+      <line x1="82" y1="40" x2="90" y2="58" stroke="#9B6FD4" stroke-width="0.8" opacity="0.5"/>
+      <line x1="30" y1="58" x2="38" y2="74" stroke="#00C2D4" stroke-width="0.8" opacity="0.5"/>
+      <line x1="60" y1="54" x2="60" y2="80" stroke="#9B6FD4" stroke-width="0.8" opacity="0.5"/>
+      <line x1="90" y1="58" x2="82" y2="74" stroke="#00C2D4" stroke-width="0.8" opacity="0.5"/>
+      <path d="M70 32 Q48 32 48 44 Q48 54 60 57 Q72 60 72 70 Q72 82 50 82" fill="none" stroke="url(#sGrad)" stroke-width="5" stroke-linecap="round" filter="url(#glow)" opacity="0.9"/>
+    </svg>
+    <div>
+      <div class="logo-text-main">SENTINEL<span class="logo-accent">-</span>REPAIR</div>
+      <div class="logo-text-sub">ADA MOBILITY SERVICES · 24/7</div>
+    </div>
+  </div>
+
+  <!-- Desktop Tabs -->
+  <div class="desktop-tabs">
+    <button class="tab-btn active" data-tab="shops" onclick="switchTab('shops',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      Repair Shops
+    </button>
+    <button class="tab-btn" data-tab="parts" onclick="switchTab('parts',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      Parts & Inventory
+    </button>
+    <button class="tab-btn" data-tab="map" onclick="switchTab('map',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+      Map View
+    </button>
+  </div>
+
+  <div class="live-badge desktop-only" style="display:flex">
+    <span class="pulse-dot"><span class="ring" style="background:var(--success);opacity:.5;width:8px;height:8px"></span><span class="core" style="background:var(--success);width:8px;height:8px"></span></span>
+    <span>AI AGENT ACTIVE</span>
+  </div>
+
+  <button class="aria-btn desktop-only" onclick="toggleChat()" style="display:flex">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Ask ARIA
+  </button>
+
+  <button class="mobile-hamburger" onclick="toggleDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</nav>
+
+<!-- Mobile Drawer -->
+<div id="mobile-drawer">
+  <button class="drawer-btn active" data-tab="shops" onclick="switchTab('shops',this);closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    Repair Shops
+  </button>
+  <button class="drawer-btn" data-tab="parts" onclick="switchTab('parts',this);closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    Parts & Inventory
+  </button>
+  <button class="drawer-btn" data-tab="map" onclick="switchTab('map',this);closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+    Map View
+  </button>
+  <button class="drawer-aria-btn" onclick="toggleChat();closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Ask ARIA – AI Assistant
+  </button>
+</div>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="container">
+    <h1>Adaptive Equipment Repair, <span style="color:var(--cyan)">Anywhere You Travel</span></h1>
+    <p>Our AI agent finds certified ADA repair shops, checks real-time parts inventory, and can arrange loaner equipment — dispatched to your gate, hotel, or location.</p>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value" style="color:var(--cyan)">847</div><div class="stat-label">Partner Shops</div></div>
+      <div class="stat-card"><div class="stat-value" style="color:var(--amber)">124</div><div class="stat-label">Loaners Available</div></div>
+      <div class="stat-card"><div class="stat-value" style="color:var(--success)">32K+</div><div class="stat-label">Parts in Stock</div></div>
+      <div class="stat-card"><div class="stat-value" style="color:var(--cyan)">12 min</div><div class="stat-label">Avg Response</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<main>
+
+  <!-- ── SHOPS TAB ── -->
+  <div id="tab-shops" class="tab-panel active">
+    <div class="content-grid">
+
+      <!-- Left: List -->
+      <div>
+        <div class="search-row">
+          <input class="search-input" id="shop-search" placeholder="Search shops or equipment type..." oninput="filterShops()" />
+          <button class="filter-btn" id="btn-loaner" onclick="toggleFilter('loaner')">🛻 Loaners</button>
+          <button class="filter-btn" id="btn-24" onclick="toggleFilter('24')">⏰ 24/7 Only</button>
+        </div>
+        <div class="results-count" id="results-count">4 shops found near your location</div>
+        <div id="shop-list"></div>
+      </div>
+
+      <!-- Right: Detail -->
+      <div>
+        <div id="detail-empty" class="detail-empty">
+          <div class="empty-icon">🔍</div>
+          <div style="font-weight:600;margin-bottom:6px">Select a shop</div>
+          <div style="font-size:13px">Click any repair location to see details, parts inventory, and booking options.</div>
+        </div>
+        <div id="detail-panel" class="detail-panel" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PARTS TAB ── -->
+  <div id="tab-parts" class="tab-panel">
+    <div class="parts-header">
+      <div>
+        <h2>Parts & Inventory</h2>
+        <p>Real-time stock across all partner shops</p>
+      </div>
+      <div class="live-inv-badge">● Live Inventory</div>
+    </div>
+
+    <!-- Desktop Table -->
+    <div class="parts-table">
+      <div class="parts-thead">
+        <div class="parts-th">Part Name</div>
+        <div class="parts-th">SKU</div>
+        <div class="parts-th">Compatible With</div>
+        <div class="parts-th">In Stock</div>
+        <div class="parts-th">Price</div>
+      </div>
+      <div id="parts-table-body"></div>
+    </div>
+
+    <!-- Mobile Cards -->
+    <div class="parts-cards-mobile" id="parts-cards-mobile"></div>
+  </div>
+
+  <!-- ── MAP TAB ── -->
+  <div id="tab-map" class="tab-panel">
+    <div class="map-header">
+      <h2>Service Area Map</h2>
+      <p>Partner shops within range of your current location</p>
+    </div>
+    <div class="map-container">
+      <div class="map-stage">
+        <svg class="map-grid-svg">
+          <script>/* grid lines drawn by JS */</script>
+        </svg>
+        <div class="map-radius-lg"></div>
+        <div class="map-radius-sm"></div>
+        <div class="map-you"></div>
+
+        <!-- Pins -->
+        <div class="map-pin" style="top:48%;left:46%" onclick="selectShopAndGo(0)">
+          <div class="map-pin-marker" style="background:var(--amber)"><span class="map-pin-emoji">🛻</span></div>
+          <div class="map-pin-label">MobilityFix ATL</div>
+        </div>
+        <div class="map-pin" style="top:35%;left:58%" onclick="selectShopAndGo(1)">
+          <div class="map-pin-marker" style="background:var(--amber)"><span class="map-pin-emoji">🛻</span></div>
+          <div class="map-pin-label">AccessTech</div>
+        </div>
+        <div class="map-pin" style="top:62%;left:62%" onclick="selectShopAndGo(2)">
+          <div class="map-pin-marker" style="background:var(--slate)"><span class="map-pin-emoji">🔒</span></div>
+          <div class="map-pin-label">QuickMobility</div>
+        </div>
+        <div class="map-pin" style="top:22%;left:35%" onclick="selectShopAndGo(3)">
+          <div class="map-pin-marker" style="background:var(--amber)"><span class="map-pin-emoji">🛻</span></div>
+          <div class="map-pin-label">ADA ProCare</div>
+        </div>
+
+        <div class="map-legend">
+          <div class="legend-row"><span class="legend-dot" style="background:var(--cyan)"></span> Open Shop</div>
+          <div class="legend-row"><span class="legend-dot" style="background:var(--amber)"></span> Loaners Available</div>
+          <div class="legend-row"><span class="legend-dot" style="background:var(--slate)"></span> Closed</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-shops-grid" id="map-shop-grid"></div>
+  </div>
+
+</main>
+
+<!-- ── MOBILE FAB ── -->
+<button id="mobile-fab" onclick="toggleChat()">
+  <svg viewBox="0 0 64 64" width="28" height="28" fill="#0B1629">
+    <circle cx="32" cy="10" r="6"/>
+    <path d="M26 20 L22 44 L30 44 L33 32 L42 36 L44 30 L34 26 L35 20 Z"/>
+    <path d="M20 46 Q18 56 28 58 Q38 60 40 50 L34 50 Q33 55 28 54 Q23 53 24 46 Z"/>
+    <path d="M42 38 L46 50 Q48 56 44 58" stroke="#0B1629" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M38 50 Q44 50 46 56" stroke="#0B1629" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </svg>
+</button>
+
+<!-- ── ARIA CHAT PANEL ── -->
+<div id="chat-panel" class="chat-hidden">
+  <div class="chat-header">
+    <div class="chat-avatar">
+      <svg viewBox="0 0 64 64" width="24" height="24" fill="white">
+        <circle cx="32" cy="10" r="6"/>
+        <path d="M26 20 L22 44 L30 44 L33 32 L42 36 L44 30 L34 26 L35 20 Z"/>
+        <path d="M20 46 Q18 56 28 58 Q38 60 40 50 L34 50 Q33 55 28 54 Q23 53 24 46 Z"/>
+        <path d="M42 38 L46 50 Q48 56 44 58" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M38 50 Q44 50 46 56" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="pulse-dot" style="position:absolute;bottom:-1px;right:-1px">
+        <span class="ring" style="background:var(--success);opacity:.5;width:9px;height:9px"></span>
+        <span class="core" style="background:var(--success);width:9px;height:9px"></span>
+      </span>
+    </div>
+    <div>
+      <div class="chat-name">ARIA</div>
+      <div class="chat-status">Adaptive Repair Intelligence • Active</div>
+    </div>
+    <button class="chat-close-btn" onclick="toggleChat()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="chat-quick">
+    <button class="quick-btn" onclick="sendMsg('Find nearest shop')">Find nearest shop</button>
+    <button class="quick-btn" onclick="sendMsg('Need a loaner')">Need a loaner</button>
+    <button class="quick-btn" onclick="sendMsg('Battery replacement')">Battery replacement</button>
+    <button class="quick-btn" onclick="sendMsg('Urgent help')">Urgent help</button>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chat-input" placeholder="Describe your equipment issue..." onkeydown="if(event.key==='Enter')sendMsg()" />
+    <button class="chat-send-btn" onclick="sendMsg()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ── AI MODAL ── -->
+<div id="ai-modal">
+  <div class="ai-modal-box">
+    <button class="ai-close-btn" onclick="closeAiModal()">✕</button>
+    <div class="ai-modal-header" id="ai-modal-title">✨ AI Assistant</div>
+    <div id="ai-modal-body" class="ai-modal-content">Loading...</div>
+  </div>
+</div>
+
+<!-- ── BOOKING MODAL ── -->
+<div id="booking-modal">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <svg viewBox="0 0 120 120" width="28" height="28" style="filter:drop-shadow(0 0 4px rgba(0,194,212,0.38));flex-shrink:0">
+        <defs>
+          <linearGradient id="fg2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00C2D4"/><stop offset="100%" stop-color="#9B6FD4"/>
+          </linearGradient>
+        </defs>
+        <path d="M60 8 L100 24 L100 62 Q100 90 60 112 Q20 90 20 62 L20 24 Z" fill="none" stroke="url(#fg2)" stroke-width="3" opacity="0.9"/>
+        <path d="M70 32 Q48 32 48 44 Q48 54 60 57 Q72 60 72 70 Q72 82 50 82" fill="none" stroke="url(#fg2)" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
+        <circle cx="60" cy="28" r="4" fill="#00C2D4" opacity="0.8"/>
+        <circle cx="38" cy="54" r="4" fill="#9B6FD4" opacity="0.8"/>
+        <circle cx="82" cy="54" r="4" fill="#9B6FD4" opacity="0.8"/>
+        <circle cx="60" cy="80" r="4" fill="#9B6FD4" opacity="0.8"/>
+      </svg>
+      <span class="footer-logo-text">SENTINEL<span class="logo-accent">-</span>REPAIR</span>
+    </div>
+    <div class="footer-copy">ADA-compliant service platform · 847 partner shops · Available 24/7/365</div>
+    <div class="footer-links">
+      <a href="#">ADA Compliance</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Support</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ── GRID SVG for Map ── -->
+<script>
+// Draw grid lines into the map SVG
+document.addEventListener('DOMContentLoaded', () => {
+  const svg = document.querySelector('.map-grid-svg');
+  if (svg) {
+    let html = '';
+    for (let i = 0; i < 12; i++) html += `<line x1="0" y1="${(i/12)*100}%" x2="100%" y2="${(i/12)*100}%" stroke="#00C2D4" stroke-width="0.5"/>`;
+    for (let i = 0; i < 16; i++) html += `<line x1="${(i/16)*100}%" y1="0" x2="${(i/16)*100}%" y2="100%" stroke="#00C2D4" stroke-width="0.5"/>`;
+    svg.innerHTML = html;
+  }
+});
+</script>
+
+<script>
+// ── Gemini API Setup ──────────────────────────────────────────────────────
+const apiKey = ""; // Leave as empty string to use Canvas provided key, OR paste your own key here if running locally.
+
+// ── Data ──────────────────────────────────────────────────────────────────
+const REPAIR_SHOPS = [
+  { id:1, name:"MobilityFix Atlanta Airport", location:"Hartsfield-Jackson ATL – Concourse B", distance:"0.3 mi", open:true,  hours:"24/7",        rating:4.9, reviews:312, specialties:["Power Wheelchairs","Scooters","Hearing Aids"], loaner:true,  loanerCount:4, phone:"(404) 555-0142", wait:"~15 min",   certified:true },
+  { id:2, name:"AccessTech Repair Hub",       location:"2101 Airport Blvd, Atlanta GA",        distance:"1.2 mi", open:true,  hours:"6am – 10pm",  rating:4.7, reviews:198, specialties:["Manual Wheelchairs","Prosthetics","Communication Devices"], loaner:true,  loanerCount:2, phone:"(404) 555-0289", wait:"~35 min",   certified:true },
+  { id:3, name:"QuickMobility Clinic",        location:"3400 Camp Creek Pkwy, Atlanta GA",     distance:"2.8 mi", open:false, hours:"8am – 6pm",   rating:4.5, reviews:87,  specialties:["Scooters","Walkers","Canes"],                    loaner:false, loanerCount:0, phone:"(404) 555-0371", wait:"Opens 8am", certified:false },
+  { id:4, name:"ADA ProCare Services",        location:"800 Virginia Ave NE, Atlanta GA",      distance:"4.1 mi", open:true,  hours:"24/7",        rating:4.8, reviews:256, specialties:["Power Wheelchairs","Stairlifts","Bath Equipment"], loaner:true,  loanerCount:6, phone:"(404) 555-0443", wait:"~20 min",   certified:true },
+];
+
+const PARTS_INVENTORY = [
+  { id:1, part:"Joystick Controller – Power Chair",  sku:"PWC-JOY-001", qty:8,  price:89,  compatible:["Permobil","Quantum","Pride"],   shop:1 },
+  { id:2, part:"12V Wheelchair Battery Pack",        sku:"BAT-12V-002", qty:14, price:124, compatible:["All Electric"],                  shop:1 },
+  { id:3, part:'Front Caster Wheel 6"',              sku:"WHL-CST-6IN", qty:22, price:34,  compatible:["Most Manual"],                  shop:2 },
+  { id:4, part:"Anti-Tip Bracket Set",              sku:"ATB-STD-004", qty:11, price:28,  compatible:["Manual Standard"],              shop:1 },
+  { id:5, part:"Armrest Pad – Left",                sku:"ARM-PAD-L05", qty:5,  price:18,  compatible:["Universal"],                    shop:2 },
+  { id:6, part:"Charging Port Adapter",             sku:"CHG-ADP-006", qty:19, price:22,  compatible:["Permobil","Invacare"],          shop:4 },
+  { id:7, part:"Footrest Extension",                sku:"FTR-EXT-007", qty:7,  price:45,  compatible:["Universal"],                    shop:4 },
+  { id:8, part:"Hearing Aid Battery (Size 13)",     sku:"HAB-13-008",  qty:60, price:8,   compatible:["Most Brands"],                  shop:1 },
+];
+
+// System prompt injecting the local database
+const systemPrompt = `You are ARIA, the Adaptive Repair Intelligence Assistant for Sentinel Repair.
+You are a 24/7 AI agent helping traveling individuals with disabilities get immediate equipment repairs, parts, and loaners. 
+You are friendly, empathetic, concise, and highly professional.
+
+CRITICAL INSTRUCTIONS:
+- Reference the database provided below to answer questions about repair shops, inventory, and wait times. 
+- You MUST cross-reference shop IDs in the parts database with the shop database to tell the user exactly WHERE a part is located.
+- If the user has an emergency, prioritize 24/7 shops and immediately offer to dispatch a technician or arrange a loaner.
+- Format responses cleanly. Use bolding for Shop Names and Parts.
+
+=== CURRENT DATABASE OF SHOPS ===
+${JSON.stringify(REPAIR_SHOPS, null, 2)}
+
+=== CURRENT INVENTORY OF PARTS ===
+${JSON.stringify(PARTS_INVENTORY, null, 2)}
+`;
+
+// ── State ─────────────────────────────────────────────────────────────────
+let selectedShop = null;
+let filterLoaner = false;
+let filter24 = false;
+let chatOpen = false;
+let chatInitialized = false;
+
+// UI Chat History Array
+let chatMessagesUI = [];
+
+// Gemini API Chat History Array
+let geminiHistory = [];
+
+let bookingShop = null;
+
+// Helper to convert simple markdown to HTML
+function parseMarkdown(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br/>');
+}
+
+// ── Gemini API Callers ────────────────────────────────────────────────────
+async function fetchGeminiResponse(userText) {
+  // Use gemini-3-flash-preview as per instructions, or fallback to standard flash if needed by environment.
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+  
+  const payload = {
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    contents: [...geminiHistory, { role: "user", parts: [{ text: userText }] }]
+  };
+
+  const delays = [1000, 2000, 4000, 8000, 16000];
+  for (let i = 0; i < delays.length + 1; i++) {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) {
+         const errorBody = await response.text();
+         throw new Error(`HTTP ${response.status}: ${errorBody}`);
+      }
+      const data = await response.json();
+      const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (replyText) {
+         geminiHistory.push({ role: "user", parts: [{ text: userText }] });
+         geminiHistory.push({ role: "model", parts: [{ text: replyText }] }); // Gemini uses "model", not "ai"
+         return replyText;
+      }
+    } catch (e) {
+      if (i === delays.length) {
+        console.error("Gemini API failed:", e);
+        return "I'm having trouble connecting to the database right now. Please try your request again in a moment.";
+      }
+      // Do not log retries per system instructions
+      await new Promise(r => setTimeout(r, delays[i]));
+    }
+  }
+}
+
+async function fetchGeminiGeneric(promptText) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+  const payload = { contents: [{ role: "user", parts: [{ text: promptText }] }] };
+  const delays = [1000, 2000, 4000, 8000, 16000];
+  
+  for (let i = 0; i < delays.length + 1; i++) {
+    try {
+      const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (!response.ok) {
+         const errorBody = await response.text();
+         throw new Error(`HTTP ${response.status}: ${errorBody}`);
+      }
+      const data = await response.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
+    } catch (e) {
+      if (i === delays.length) {
+          console.error("Gemini API failed:", e);
+          return "I'm having trouble connecting to the AI right now.";
+      }
+      await new Promise(r => setTimeout(r, delays[i]));
+    }
+  }
+}
+
+// ── Tab Switching ──────────────────────────────────────────────────────────
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+
+  document.querySelectorAll('.tab-btn, .drawer-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  document.querySelectorAll(`[data-tab="${id}"]`).forEach(b => b.classList.add('active'));
+}
+
+// ── Drawer ────────────────────────────────────────────────────────────────
+function toggleDrawer() {
+  const d = document.getElementById('mobile-drawer');
+  d.classList.toggle('open');
+}
+function closeDrawer() {
+  document.getElementById('mobile-drawer').classList.remove('open');
+}
+
+// ── Filters ───────────────────────────────────────────────────────────────
+function toggleFilter(type) {
+  if (type === 'loaner') {
+    filterLoaner = !filterLoaner;
+    document.getElementById('btn-loaner').classList.toggle('active-amber', filterLoaner);
+  } else {
+    filter24 = !filter24;
+    document.getElementById('btn-24').classList.toggle('active-cyan', filter24);
+  }
+  renderShopList();
+}
+
+function filterShops() { renderShopList(); }
+
+function getFilteredShops() {
+  const term = document.getElementById('shop-search').value.toLowerCase();
+  return REPAIR_SHOPS.filter(s => {
+    const matchSearch = !term || s.name.toLowerCase().includes(term) || s.specialties.some(sp => sp.toLowerCase().includes(term));
+    const matchLoaner = !filterLoaner || s.loaner;
+    const match24     = !filter24 || s.hours === '24/7';
+    return matchSearch && matchLoaner && match24;
+  });
+}
+
+// ── Shop List ─────────────────────────────────────────────────────────────
+function renderShopList() {
+  const shops = getFilteredShops();
+  document.getElementById('results-count').textContent = shops.length + ' shops found near your location';
+
+  const list = document.getElementById('shop-list');
+  list.innerHTML = shops.map(s => shopCardHTML(s)).join('');
+}
+
+function shopCardHTML(shop) {
+  const sel = selectedShop && selectedShop.id === shop.id;
+  return `
+  <div class="shop-card ${sel ? 'selected' : ''}" onclick="selectShop(${shop.id})">
+    <div class="shop-card-top">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span class="shop-name">${shop.name}</span>
+          ${shop.certified ? '<span class="ada-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> ADA Cert</span>' : ''}
+        </div>
+        <div class="shop-location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${shop.location}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <span class="status-badge ${shop.open ? 'status-open' : 'status-closed'}">
+          ${shop.open ? '<span class="pulse-dot"><span class="ring" style="background:var(--success);opacity:.5;width:7px;height:7px"></span><span class="core" style="background:var(--success);width:7px;height:7px"></span></span>' : ''}
+          ${shop.open ? 'OPEN' : 'CLOSED'}
+        </span>
+        <span class="shop-dist">${shop.distance}</span>
+      </div>
+    </div>
+    <div class="specialty-tags">${shop.specialties.map(sp=>`<span class="specialty-tag">${sp}</span>`).join('')}</div>
+    <div class="shop-meta">
+      <div class="shop-rating">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span class="rating-val">${shop.rating}</span>
+        <span class="rating-count">(${shop.reviews})</span>
+      </div>
+      <div class="shop-wait">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        ${shop.wait}
+      </div>
+      ${shop.loaner ? `<div class="loaner-badge">🛻 ${shop.loanerCount} Loaners</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function selectShop(id) {
+  selectedShop = REPAIR_SHOPS.find(s => s.id === id);
+  renderShopList();
+  renderDetail();
+}
+
+function renderDetail() {
+  const panel = document.getElementById('detail-panel');
+  const empty  = document.getElementById('detail-empty');
+  if (!selectedShop) { panel.style.display='none'; empty.style.display='block'; return; }
+  const s = selectedShop;
+  const parts = PARTS_INVENTORY.filter(p => p.shop === s.id);
+  empty.style.display = 'none';
+  panel.style.display = 'block';
+  panel.innerHTML = `
+    <div class="detail-top">
+      <div>
+        <div class="detail-name">${s.name}</div>
+        <div class="detail-loc">${s.location}</div>
+      </div>
+      <span class="status-badge ${s.open ? 'status-open' : 'status-closed'}" style="padding:4px 12px">${s.open ? '● OPEN' : 'CLOSED'}</span>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-metric"><div class="metric-label">Hours</div><div class="metric-val">${s.hours}</div></div>
+      <div class="detail-metric"><div class="metric-label">Wait Time</div><div class="metric-val">${s.wait}</div></div>
+      <div class="detail-metric" style="position:relative;">
+        <div class="metric-label">Rating</div>
+        <div class="metric-val">⭐ ${s.rating} (${s.reviews})</div>
+        <button style="margin-top:6px; font-size:10px; padding:5px 8px; width:100%; text-align:center" class="filter-btn active-cyan" onclick="summarizeReviews(${s.id})">✨ AI Review Summary</button>
+      </div>
+      <div class="detail-metric"><div class="metric-label">Distance</div><div class="metric-val">${s.distance}</div></div>
+    </div>
+    ${s.loaner ? `<div class="loaner-alert"><div class="loaner-alert-title">🛻 Loaners Available</div><div class="loaner-alert-body">${s.loanerCount} units ready for immediate pickup or delivery to your terminal.</div></div>` : ''}
+    <div class="section-eyebrow">SPECIALTIES</div>
+    <div class="specialty-list">${s.specialties.map(sp=>`<span class="specialty-pill">${sp}</span>`).join('')}</div>
+    ${parts.length ? `<div class="section-eyebrow">PARTS IN STOCK</div>
+    <div class="parts-list">${parts.map(p=>`
+      <div class="parts-row">
+        <div><div class="part-name">${p.part}</div><div class="part-sku">SKU: ${p.sku}</div></div>
+        <div style="text-align:right"><div class="part-price">$${p.price}</div><div class="part-qty">Qty: ${p.qty}</div></div>
+      </div>`).join('')}
+    </div>` : ''}
+    <div class="detail-actions">
+      <a href="tel:${s.phone}" class="btn-call">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.61 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Call Shop
+      </a>
+      <button class="btn-book" onclick="openBooking(${s.id})">Book Appointment →</button>
+    </div>`;
+}
+
+// ── Parts ─────────────────────────────────────────────────────────────────
+function qtyClass(q) { return q > 10 ? 'qty-high' : q > 5 ? 'qty-medium' : 'qty-low'; }
+
+function renderParts() {
+  const body = document.getElementById('parts-table-body');
+  body.innerHTML = PARTS_INVENTORY.map((p,i) => {
+    const shop = REPAIR_SHOPS.find(s => s.id === p.shop);
+    return `
+    <div class="parts-tr">
+      <div><div class="part-main-name">${p.part}</div><div class="part-shop-name">at ${shop ? shop.name : ''}</div></div>
+      <div class="sku-code">${p.sku}</div>
+      <div class="compat-tags">${p.compatible.map(c=>`<span class="compat-tag">${c}</span>`).join('')}</div>
+      <div><span class="${qtyClass(p.qty)}">${p.qty}</span><span class="qty-unit"> units</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-weight:700;color:var(--white)">$${p.price}</span>
+        <button class="order-btn" style="background:rgba(245,166,35,0.12); color:var(--amber); border-color:var(--amber)" onclick="generatePartGuide('${p.part}')">✨ AI Guide</button>
+        <button class="order-btn">Order</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Mobile cards
+  const cards = document.getElementById('parts-cards-mobile');
+  cards.innerHTML = PARTS_INVENTORY.map(p => {
+    const shop = REPAIR_SHOPS.find(s => s.id === p.shop);
+    return `
+    <div class="parts-card">
+      <div class="parts-card-top">
+        <span class="parts-card-name">${p.part}</span>
+        <span class="parts-card-price">$${p.price}</span>
+      </div>
+      <div class="parts-card-meta">${p.sku} · ${shop ? shop.name : ''}</div>
+      <div class="parts-card-bottom">
+        <div class="compat-tags">${p.compatible.map(c=>`<span class="compat-tag">${c}</span>`).join('')}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="${qtyClass(p.qty)}">${p.qty} units</span>
+          <button class="order-btn" style="background:rgba(245,166,35,0.12); color:var(--amber); border-color:var(--amber)" onclick="generatePartGuide('${p.part}')">✨ AI Guide</button>
+          <button class="order-btn">Order</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Map mini-shop grid ────────────────────────────────────────────────────
+function renderMapGrid() {
+  document.getElementById('map-shop-grid').innerHTML = REPAIR_SHOPS.map(shop => `
+  <div class="mini-shop-card" onclick="selectShopAndGo(${shop.id - 1})">
+    <div class="mini-shop-top">
+      <span class="mini-shop-name">${shop.name}</span>
+      <span style="color:${shop.open ? 'var(--success)' : 'var(--danger)'};font-size:12px;font-weight:700">${shop.open ? '●' : '○'}</span>
+    </div>
+    <div class="mini-shop-meta">${shop.distance} · ${shop.wait}</div>
+    ${shop.loaner ? `<div class="mini-loaner">🛻 ${shop.loanerCount} Loaners Ready</div>` : ''}
+  </div>`).join('');
+}
+
+function selectShopAndGo(idx) {
+  selectedShop = REPAIR_SHOPS[idx];
+  renderShopList();
+  renderDetail();
+  switchTab('shops', document.querySelector('[data-tab="shops"]'));
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────────
+async function toggleChat() {
+  chatOpen = !chatOpen;
+  const panel = document.getElementById('chat-panel');
+  panel.classList.toggle('chat-hidden', !chatOpen);
+  
+  if (chatOpen) {
+    renderChatMessages();
+    document.getElementById('chat-input').focus();
+    
+    // Let Gemini dynamically generate the opening greeting upon first open!
+    if (!chatInitialized) {
+      chatInitialized = true;
+      showTypingIndicator();
+      const greeting = await fetchGeminiResponse("Hello! Please introduce yourself to the user as ARIA, the 24/7 Adaptive Repair Intelligence Assistant. Keep it very brief (1-2 sentences) and ask how you can help them today.");
+      removeTypingIndicator();
+      chatMessagesUI.push({ role:'ai', text: greeting });
+      renderChatMessages();
+    }
+  }
+}
+
+function renderChatMessages() {
+  const el = document.getElementById('chat-messages');
+  el.innerHTML = chatMessagesUI.map(m => `
+  <div class="msg-row ${m.role}">
+    <div class="msg-bubble ${m.role}">${parseMarkdown(m.text)}</div>
+  </div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function showTypingIndicator() {
+  const el = document.getElementById('chat-messages');
+  const typing = document.createElement('div');
+  typing.className = 'msg-row ai';
+  typing.id = 'typing-indicator';
+  typing.innerHTML = `<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  el.appendChild(typing);
+  el.scrollTop = el.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  const typing = document.getElementById('typing-indicator');
+  if (typing) typing.remove();
+}
+
+async function sendMsg(overrideText) {
+  const input = document.getElementById('chat-input');
+  const text = typeof overrideText === 'string' ? overrideText : input.value.trim();
+  if (!text) return;
+  
+  input.value = '';
+  
+  // Add user message to UI
+  chatMessagesUI.push({ role:'user', text });
+  renderChatMessages();
+
+  // Show Typing indicator
+  showTypingIndicator();
+
+  // Call Gemini API
+  const aiResponseText = await fetchGeminiResponse(text);
+  
+  // Remove typing indicator
+  removeTypingIndicator();
+
+  // Add AI response to UI
+  chatMessagesUI.push({ role:'ai', text: aiResponseText });
+  renderChatMessages();
+}
+
+// ── AI Feature Handlers ───────────────────────────────────────────────────
+function openAiModal(title, initialText) {
+  document.getElementById('ai-modal-title').innerHTML = `✨ ${title}`;
+  document.getElementById('ai-modal-body').innerHTML = initialText;
+  document.getElementById('ai-modal').classList.add('open');
+}
+
+function closeAiModal() {
+  document.getElementById('ai-modal').classList.remove('open');
+}
+
+async function summarizeReviews(shopId) {
+  const shop = REPAIR_SHOPS.find(s => s.id === shopId);
+  openAiModal(`AI Review Summary: ${shop.name}`, `<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div><br/>Synthesizing customer reviews...`);
+  
+  const prompt = `You are a helpful assistant for a disability mobility repair platform. 
+  Generate a realistic, 2-to-3 sentence summary of customer reviews for a repair shop called "${shop.name}".
+  Context: They have a ${shop.rating} star rating based on ${shop.reviews} reviews, and they specialize in ${shop.specialties.join(", ")}. Wait time is currently ${shop.wait}.
+  Mention wait times, staff friendliness, and service quality. Keep it highly concise and encouraging. 
+  Use ** for bold words. Do NOT use markdown code blocks.`;
+  
+  const response = await fetchGeminiGeneric(prompt);
+  document.getElementById('ai-modal-body').innerHTML = parseMarkdown(response);
+}
+
+async function generatePartGuide(partName) {
+  openAiModal(`AI Troubleshooting: ${partName}`, `<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div><br/>Generating technical advice...`);
+  
+  const prompt = `Provide a very brief, helpful safety and troubleshooting guide for a mobility device component named "${partName}".
+  Structure your response into two short sections:
+  **1. Quick Function/Diagnostic:** (1 sentence on what it does and how to know if it's broken).
+  **2. Safety Tip:** (1 sentence on what to be careful of when handling/replacing it).
+  Keep it under 60 words total. Use ** for bold text. Do NOT use markdown code blocks.`;
+  
+  const response = await fetchGeminiGeneric(prompt);
+  document.getElementById('ai-modal-body').innerHTML = parseMarkdown(response);
+}
+
+
+// ── Booking ───────────────────────────────────────────────────────────────
+function openBooking(shopId) {
+  bookingShop = REPAIR_SHOPS.find(s => s.id === shopId);
+  renderBookingModal(false);
+  document.getElementById('booking-modal').classList.add('open');
+}
+
+function renderBookingModal(confirmed) {
+  const box = document.getElementById('modal-box');
+  if (confirmed) {
+    box.innerHTML = `
+      <div class="modal-success">
+        <div class="check">✅</div>
+        <h3>Appointment Confirmed!</h3>
+        <p>A technician at ${bookingShop.name} has been notified. You'll receive a confirmation to your device.</p>
+      </div>`;
+  } else {
+    box.innerHTML = `
+      <div class="modal-h3">Book at ${bookingShop.name}</div>
+      <div class="modal-sub">Estimated wait: ${bookingShop.wait}</div>
+      <div class="modal-fields">
+        <div><div class="field-label">Your Name</div><input class="modal-input" placeholder="Full name" /></div>
+        <div><div class="field-label">Equipment Type</div><input class="modal-input" placeholder="e.g. Power wheelchair, scooter..." /></div>
+        <div><div class="field-label">Your Location / Gate</div><input class="modal-input" placeholder="e.g. Concourse B, Gate 22" /></div>
+        <div><div class="field-label">Phone or Email</div><input class="modal-input" placeholder="For confirmation" /></div>
+        ${bookingShop.loaner ? `<label class="modal-checkbox-row"><input type="checkbox" /><span>Also request a loaner unit while equipment is repaired</span></label>` : ''}
+      </div>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeBooking()">Cancel</button>
+        <button class="modal-confirm" onclick="confirmBooking()">Confirm Booking →</button>
+      </div>`;
+  }
+}
+
+function closeBooking() {
+  document.getElementById('booking-modal').classList.remove('open');
+  bookingShop = null;
+}
+
+function confirmBooking() {
+  renderBookingModal(true);
+  setTimeout(() => {
+    closeBooking();
+  }, 3000);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+renderShopList();
+renderParts();
+renderMapGrid();
+</script>
+</body>
+</html>
